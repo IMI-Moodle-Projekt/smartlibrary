@@ -21,12 +21,12 @@
  * @copyright   2023 Your Name <you@example.com>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+if ($hassiteconfig) { // needs this condition or there is error on login page
+    $settings = new admin_settingpage('local_smartlibrary', get_string('pluginname', 'local_smartlibrary'));
+    $ADMIN->add('localplugins', $settings);
 
- defined('MOODLE_INTERNAL') || die();
- 
- $plugin->component = 'local_smartlibrary'; // Full name of the plugin.
- $plugin->version   = 2023112300;          // The current plugin version (Date: YYYYMMDDXX).
- $plugin->requires  = 2020110900;          // Requires this Moodle version.
- $plugin->maturity  = MATURITY_STABLE;
- $plugin->release   = 'v1.0';
- 
+    // Add settings here
+    $settings->add(new admin_setting_configcheckbox('local_smartlibrary/enable', 
+        get_string('enable', 'local_smartlibrary'), 
+        get_string('enable_desc', 'local_smartlibrary'), 0));
+}

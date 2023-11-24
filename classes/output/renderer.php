@@ -17,16 +17,33 @@
 /**
  * Plugin version and other meta-data are defined here.
  *
- * @package     local_smartlibrary
+ * @package     smartlibrary
  * @copyright   2023 Your Name <you@example.com>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
- defined('MOODLE_INTERNAL') || die();
- 
- $plugin->component = 'local_smartlibrary'; // Full name of the plugin.
- $plugin->version   = 2023112300;          // The current plugin version (Date: YYYYMMDDXX).
- $plugin->requires  = 2020110900;          // Requires this Moodle version.
- $plugin->maturity  = MATURITY_STABLE;
- $plugin->release   = 'v1.0';
- 
+namespace smartlibrary\output;
+require_once(__DIR__ . '/../lib.php');
+
+defined('MOODLE_INTERNAL') || die();
+
+use plugin_renderer_base;
+
+
+
+class renderer extends plugin_renderer_base {
+
+    /**
+     * Render a custom table for PDF resources.
+     *
+     * @param stdClass $pdfResource
+     * @return string HTML for the rendered table
+     */
+    public function render_pdf_resource_table($pdfResource) {
+            // You can pass $pdfResource to your function if needed, or modify it as required
+            return smartlibrary_display_table();
+        }
+        
+    }
+
+    // Additional methods for other components...

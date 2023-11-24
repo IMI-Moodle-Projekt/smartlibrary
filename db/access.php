@@ -17,16 +17,34 @@
 /**
  * Plugin version and other meta-data are defined here.
  *
- * @package     local_smartlibrary
+ * @package     smartlibrary
  * @copyright   2023 Your Name <you@example.com>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
- defined('MOODLE_INTERNAL') || die();
- 
- $plugin->component = 'local_smartlibrary'; // Full name of the plugin.
- $plugin->version   = 2023112300;          // The current plugin version (Date: YYYYMMDDXX).
- $plugin->requires  = 2020110900;          // Requires this Moodle version.
- $plugin->maturity  = MATURITY_STABLE;
- $plugin->release   = 'v1.0';
- 
+defined('MOODLE_INTERNAL') || die();
+
+$capabilities = array(
+
+    'local/smartlibrary:view' => array(
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => array(
+            'user' => CAP_ALLOW,
+            'guest' => CAP_PREVENT,
+            'student' => CAP_ALLOW,
+            'teacher' => CAP_ALLOW
+        )
+    ),
+
+    'local/smartlibrary:edit' => array(
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => array(
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW
+        )
+    ),
+
+    // ... other capabilities
+);
