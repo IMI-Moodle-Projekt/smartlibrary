@@ -17,7 +17,7 @@
 /**
  * Plugin strings are defined here.
  *
- * @package     smartlibrary
+ * @package     local_smartlibrary
  * @category    string
  * @copyright   2023 Your Name <your@email.address>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

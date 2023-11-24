@@ -1,3 +1,0 @@
-[submodule "docker-moodle"]
-	path = docker-moodle
-	url = https://github.com/IMI-Moodle-Projekt/smartlibrary.git

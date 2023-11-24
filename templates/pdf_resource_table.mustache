@@ -1,16 +1,16 @@
-<table>
-    <thead>
+
+<!-- pdf_resource_table.mustache -->
+<div class="pdf-resource-table">
+    <table>
         <tr>
             <th>Keyword</th>
             <th>Resource</th>
         </tr>
-    </thead>
-    <tbody>
-        {{#resources}}
+        {{#keywords}}
         <tr>
             <td>{{keyword}}</td>
             <td>{{resource}}</td>
         </tr>
-        {{/resources}}
-    </tbody>
-</table>
+        {{/keywords}}
+    </table>
+</div>

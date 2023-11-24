@@ -22,15 +22,12 @@ $context = context_system::instance();
 $pageurl = new moodle_url('/local/smartlibrary/index.php');
 $heading = get_string('pluginname', 'local_smartlibrary');
 
-
-
 // Set up the page
 $PAGE->set_context($context);
 $PAGE->set_url($pageurl);
 $PAGE->set_pagelayout('standard');
 $PAGE->set_title(format_string($heading));
 $PAGE->set_heading($heading);
-
 
 // Check for view capability
 if (!has_capability('local/smartlibrary:view', $context)) {
