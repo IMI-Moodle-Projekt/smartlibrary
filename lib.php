@@ -22,7 +22,14 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-function local_smartlibrary_extend_settings_navigation($settingsnav, $context) {
+// In lib.php
+function get_my_records() {
+    global $DB;
+    return $DB->get_records('moodle.course');
+}
+
+
+/*function local_smartlibrary_extend_settings_navigation($settingsnav, $context) {
     global $CFG, $PAGE;
 
     // Only add this settings item on non-site course pages.
@@ -65,5 +72,6 @@ function smartlibrary_display_table() {
     );
     return html_writer::table($table);
 }
+*/
 
 

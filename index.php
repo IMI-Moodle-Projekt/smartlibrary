@@ -15,6 +15,7 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 require(__DIR__ . '/../../config.php');
+require_once(__DIR__ . '/lib.php');
 require_login();
 
 // Define the context and page URL
@@ -36,16 +37,21 @@ if (!has_capability('local/smartlibrary:view', $context)) {
 
 // Render the page header
 echo $OUTPUT->header();
+// CSS-Styles für die Tabelle
+echo '<style>';
+echo 'table { width: 100%; border-collapse: collapse; }';
+echo 'th, td { border: 1px solid black; padding: 8px; text-align: left; }';
+echo '</style>';
 
-// Additional content and logic for users with view capability
-// ...
-
-// Check for edit capability in a specific course context (if applicable)
-// $coursecontext = context_course::instance($courseid);
-// if (has_capability('local/smartlibrary:edit', $coursecontext)) {
-//     // Code for users with edit capability
-//     // ...
-// }
-
-// Render the page footer
+// Tabelle für die Anzeige der Daten
+echo '<table>';
+echo '<tr><th>Spaltenname</th></tr>'; // Ersetzen Sie 'Spaltenname' durch den tatsächlichen Spaltennamen
+foreach ($records as $record) {
+    echo '<tr>';
+    echo '<td>' . htmlspecialchars($record->course_id) . '</td>';
+    echo '<td>' . htmlspecialchars($record->course_name) . '</td>'; // Ersetzen Sie 'fieldname' mit dem tatsächlichen Feldnamen
+    echo '</tr>';
+}
+echo '</table>';
 echo $OUTPUT->footer();
+?>

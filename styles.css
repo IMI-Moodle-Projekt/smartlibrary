@@ -1,0 +1,11 @@
+.local_smartlibrary_course_table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.local_smartlibrary_course_table th, 
+.local_smartlibrary_course_table td {
+    border: 1px solid black;
+    padding: 8px;
+    text-align: left;
+}
