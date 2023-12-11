@@ -37,21 +37,16 @@ if (!has_capability('local/smartlibrary:view', $context)) {
 
 // Render the page header
 echo $OUTPUT->header();
-// CSS-Styles für die Tabelle
-echo '<style>';
-echo 'table { width: 100%; border-collapse: collapse; }';
-echo 'th, td { border: 1px solid black; padding: 8px; text-align: left; }';
-echo '</style>';
 
-// Tabelle für die Anzeige der Daten
-echo '<table>';
-echo '<tr><th>Spaltenname</th></tr>'; // Ersetzen Sie 'Spaltenname' durch den tatsächlichen Spaltennamen
-foreach ($records as $record) {
-    echo '<tr>';
-    echo '<td>' . htmlspecialchars($record->course_id) . '</td>';
-    echo '<td>' . htmlspecialchars($record->course_name) . '</td>'; // Ersetzen Sie 'fieldname' mit dem tatsächlichen Feldnamen
-    echo '</tr>';
-}
-echo '</table>';
+echo '<p>Enter the Course ID to view the matching learning resources. <br> You can also view this page from the course menu.</p>';
+echo '<form action="view.php" method="get">';
+echo '    <label for="courseid">Course ID:</label>';
+echo '    <input type="text" id="courseid" name="courseid" required>';
+echo '    <button type="submit">Submit</button>';
+echo '</form>';
+
+echo '<p>Use the Cralwer to add learning material links to the database:</p>';
+echo '<a href="crawler.php">Open the Cralwer</a>';
+
 echo $OUTPUT->footer();
 ?>

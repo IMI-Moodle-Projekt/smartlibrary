@@ -25,7 +25,7 @@
  defined('MOODLE_INTERNAL') || die();
  
  $plugin->component = 'local_smartlibrary'; // Full name of the plugin.
- $plugin->version   = 2023112300;          // The current plugin version (Date: YYYYMMDDXX).
+ $plugin->version   = 2023121102;          // The current plugin version (Date: YYYYMMDDXX).
  $plugin->requires  = 2020110900;          // Requires this Moodle version.
  $plugin->maturity  = MATURITY_STABLE;
  $plugin->release   = 'v1.0';
