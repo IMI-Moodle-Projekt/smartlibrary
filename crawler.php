@@ -54,7 +54,7 @@ if ($data = data_submitted()) {
         // Check if the domain is supported
         // we do this here so that we do not download the HTML but give an error 
         // message right away
-        $allowedDomains = ['www.coursera.org']; // Add your supported domains here
+        $allowedDomains = ['www.coursera.org', 'de.wikipedia.org']; // Add your supported domains here
         $parsedUrl = parse_url($websiteLink);
         $host = isset($parsedUrl['host']) ? $parsedUrl['host'] : '';
 
@@ -111,8 +111,18 @@ if ($data = data_submitted()) {
                     if ($h1Elements->length > 0) {
                         $materialName = trim($h1Elements->item(0)->textContent);
                     }
-                    echo "- Extracted learning material name: $materialName";
+                    echo "- Extracted learning material name: $materialName<br>";
 
+                } elseif ($host == 'de.wikipedia.org') {
+
+                    // 1. Fill $extractedKeywords with keywords extracted from $htmlContent
+                    // 2. Set $materialName to the topic name 
+                    // 3. Done - the result is written to the database in the code below
+                    
+                    echo '- Extracted keywords:';
+                    echo '<pre>' . var_dump($extractedKeywords) . '</pre>';
+                    echo "- Extracted learning material name: $materialName<br>";
+                    
                 } else {
                     echo "<p>Domain supported but no keyword extraction was imlemented.</p>";
                 }
