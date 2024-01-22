@@ -16,6 +16,7 @@
 
 require(__DIR__ . '/../../config.php');
 require_once(__DIR__ . '/lib.php');
+require_once($CFG->dirroot . '/course/lib.php');
 require_login();
 
 global $DB;
@@ -32,6 +33,7 @@ $PAGE->set_pagelayout('standard');
 $PAGE->set_title(format_string($heading));
 $PAGE->set_heading($heading);
 
+
 // Check for view capability
 if (!has_capability('local/smartlibrary:view', $context)) {
     print_error('nopermissions', 'error', '', 'view smartlibrary');
@@ -40,134 +42,165 @@ if (!has_capability('local/smartlibrary:view', $context)) {
 // Render the page header
 echo $OUTPUT->header();
 
-// In the future the crawler can crawl through multiple pages.
-// For now it only extracts keywords from one given page and uses the inserted link as course link.
 
-// Check if the form is submitted
-if ($data = data_submitted()) {
-    // Get the website link from the form using optional_param
-    $websiteLink = optional_param('websiteLink', '', PARAM_URL);
+// Define array of Links to be extracted and later parsed
+$extractedLinks = [];
 
-    // Validate the URL
-    if (filter_var($websiteLink, FILTER_VALIDATE_URL)) {
+// Define array of valid keywords extracted from Moodle course summary
+$extractedSummaryKeywords = [];
+$extractedCourseNames = [];
 
-        // Check if the domain is supported
-        // we do this here so that we do not download the HTML but give an error 
-        // message right away
-        $allowedDomains = ['www.coursera.org', 'de.wikipedia.org']; // Add your supported domains here
-        $parsedUrl = parse_url($websiteLink);
-        $host = isset($parsedUrl['host']) ? $parsedUrl['host'] : '';
+// Get all courses of Moodle
+$courses = get_courses();
 
-        if (in_array($host, $allowedDomains)) {
-
-            // Variables to store the extraction results
-            $extractedKeywords = [];
-            $materialName = "";
-
-            // Download the HTML content
-            $htmlContent = file_get_contents($websiteLink);
-
-            if ($htmlContent !== false) {
-                echo "<h2>Extracted keywords:</h2>";
-                echo "<p>Link: $websiteLink</p>";
-
-                // For debugging: 
-                // echo '<pre>' . var_dump($htmlContent) . '</pre>';
-
-                // Keyword extraction specific to coursera
-                if ($host == 'www.coursera.org') {
-
-                    // Create a DOMDocument object
-                    $dom = new DOMDocument();
-
-                    // Load the HTML content
-                    libxml_use_internal_errors(true); // Disable warnings for malformed HTML
-                    $dom->loadHTML($htmlContent);
-                    libxml_clear_errors();
-
-                    // Create a DOMXPath object
-                    $xpath = new DOMXPath($dom);
-
-                    // Coursera has a "Skill" section with links which have this attribute:
-                    $attributeValue = 'seo_skills_link_tag';
-
-                    // Use XPath query to find <a> elements with that attribute value
-                    $query = "//a[@data-track-component='$attributeValue']";
-
-                    // Execute the query
-                    $matchingLinks = $xpath->query($query);
-
-                    // Extract and display the text content of matching links
-                    foreach ($matchingLinks as $link) {
-                        $skillText = trim($link->textContent);
-                        echo "- Extracted Keywords: $skillText<br>";
-                        $extractedKeywords[] = $skillText;
-                    }
-
-                    // The course name is in the first h1 element
-                    // Create XPath query to find the first <h1> element
-                    $query = "//h1";
-                    $h1Elements = $xpath->query($query);
-                    if ($h1Elements->length > 0) {
-                        $materialName = trim($h1Elements->item(0)->textContent);
-                    }
-                    echo "- Extracted learning material name: $materialName<br>";
-
-                } elseif ($host == 'de.wikipedia.org') {
-
-                    // 1. Fill $extractedKeywords with keywords extracted from $htmlContent
-                    // 2. Set $materialName to the topic name 
-                    // 3. Done - the result is written to the database in the code below
-                    
-                    echo '- Extracted keywords:';
-                    echo '<pre>' . var_dump($extractedKeywords) . '</pre>';
-                    echo "- Extracted learning material name: $materialName<br>";
-                    
-                } else {
-                    echo "<p>Domain supported but no keyword extraction was imlemented.</p>";
-                }
-
-            } else {
-                // Error downloading HTML
-                echo "<p>Error downloading HTML from $websiteLink.</p>";
+// Iterate each Moodle course summary and extract valid keywords of it and add it to $extractedSummaryKeywords
+foreach ($courses as $course) {
+    if (!empty($course->summary)) {
+        $validKeywords = get_keywords($course->summary);
+        foreach ($validKeywords as $keyword) {
+            if (!in_array($keyword, $extractedSummaryKeywords)) {
+                array_push($extractedSummaryKeywords, $keyword);
             }
-
-            if (!empty($extractedKeywords) && !empty($materialName)) {
-                $combinedKeywords = implode(", ", $extractedKeywords);
-                // Define the data for the new record
-                $data = new stdClass();
-                $data->keywords = $combinedKeywords;
-                $data->name = $materialName;
-                $data->link = $websiteLink;
-
-                // For debugging: 
-                // echo '<pre>' . var_dump($data) . '</pre>';
-
-                // Insert the record into the smartlib_resources table
-                // $table_name = $CFG->prefix . 'smartlib_learning_resources';
-                $table_name = 'smartlib_learning_resources';
-                $newid = $DB->insert_record($table_name, $data);
-
-                echo "- New learning material $materialName inserted into database with id $newid.";
-
-            } else {
-                echo "Error parsing the page html.";
-            }
-
-        } else {
-            echo "<p>Domain $host not supported. Please enter a valid website URL.</p>";
         }
-    } else {
-        echo "<p>Please enter a valid website URL.</p>";
     }
-} else {
-    echo '<h2>Enter a Link to a course to extract:</h2>';
-    echo '<form method="post">';
-    echo '    <label for="websiteLink">Website Link:</label>';
-    echo '    <input type="text" id="websiteLink" name="websiteLink" placeholder="https://www.coursera.org/specializations/swift-5-ios-app-developer" required>';
-    echo '    <button type="submit">Go</button>';
-    echo '</form>';
+}
+
+// if $extractedSummaryKeywords doesn't have valid keywords to crawl
+if (empty($extractedSummaryKeywords)) {
+    echo "None of the courses have any summary with valid keywords to intial crawler! Add some and try again";
+} else { // if $extractedSummaryKeywords has valid keywords to crawl
+    // 1.Coursera
+    foreach ($extractedSummaryKeywords as $keyword) {
+        $table_name = 'smartlib_learning_resources';
+        $sql = "SELECT COUNT(*) FROM {" . $table_name . "} WHERE " . $DB->sql_compare_text('keywords') . " = ?";
+        $params = array($keyword);
+        $count = $DB->count_records_sql($sql, $params);
+
+        if ($count > 0) {
+            echo $keyword . " already in the db and was not crawled<br>";
+        } else {
+            // Strip <p> tags from the course summary keyword
+            $cleanKeyword = strip_tags($keyword);
+            // Define the search-query-url by Coursera for the keyword 
+            $queryURL = 'https://www.coursera.org/search?query=' . urlencode($cleanKeyword);
+            // Create a new DOMDocument object $docs
+            $docs = new DOMDocument();
+            // Load the HTML into the DOMDocument object (makes it easier to navigate, query, and manipulate HTML structure)
+            @$docs->loadHTML(file_get_contents($queryURL));
+            // Create a new DOMXPath object $xpath to perform XPath queries on the DOMDocument object
+            $xpath = new DOMXPath($docs);
+            // Perform an XPath query to select 5 list items within a specific unordered list and store them in DOMNodeList object $listItems
+            $listItems = $xpath->query('(//ul[contains(@class, "cds-9 css-18msmec cds-10")]//li)[position() <= 5]');
+            // Check if the XPath query was successful or not
+            if ($listItems === false) {
+                die("Error in XPath query");
+            }
+            // Iterate each elemnt of the  DOMNodeList $listItems
+            foreach ($listItems as $item) {
+
+                $data = new stdClass();
+                // Perform another XPath query to search for <a>-Tags within the <li>-Element and store each value in DOMNodeList object $links
+                $links = $xpath->query('.//a', $item);
+                // Extract the href from the only element (first) in $links and assign it to $href
+                $href = $links->item(0)->getAttribute('href');
+                $courseLink = "https://www.coursera.org" . $href;
+                $data->link = $courseLink;
+                // Perform another XPath query to search for <h3>-Tags within the <li>-Element and store each value in DOMNodeList object $h3Tags
+                $h3Tags = $xpath->query('.//h3', $item);
+                // Extract the text content from the only element (first) in $h3Tags and assign it to $courseName
+                $courseName = $h3Tags->item(0)->textContent;
+
+                $data->name = $courseName;
+
+                $data->keywords = $cleanKeyword;
+
+                $table_name = 'smartlib_learning_resources';
+
+                $sql = "SELECT * FROM {" . $table_name . "} WHERE " . $DB->sql_compare_text('link') . " = ?";
+                $params = array($courseLink);
+
+                if (!$DB->record_exists_sql($sql, $params)) {
+                    // Link does not exist, insert the new record
+                    $newid = $DB->insert_record($table_name, $data);
+                    //echo "- New learning material $courseName inserted into database with id $newid.";
+                } else {
+                    // Link already exists, skip insertion
+                    // echo "- Learning material with link $courseLink already exists in the database.";
+                }
+            }
+        }
+    }
+
+    // 2.Code Cademy
+    foreach ($extractedSummaryKeywords as $keyword) {
+        $table_name = 'smartlib_learning_resources';
+        $sql = "SELECT COUNT(*) FROM {" . $table_name . "} WHERE " . $DB->sql_compare_text('keywords') . " = ?";
+        $params = array($keyword);
+        $count = $DB->count_records_sql($sql, $params);
+
+        if ($count > 5) {
+            echo $keyword . " already in the db and was not crawled<br>";
+        } else {
+            // Strip <p> tags from the course summary keyword
+            $cleanKeyword = strip_tags($keyword);
+            // Define the search-query-url by CodeCademy for the keyword 
+            $queryURL = 'https://www.codecademy.com/search?query=' . urlencode($cleanKeyword);
+            // Create a new DOMDocument object $docs
+            $docs = new DOMDocument();
+            // Load the HTML into the DOMDocument object (makes it easier to navigate, query, and manipulate HTML structure)
+            @$docs->loadHTML(file_get_contents($queryURL));
+            // Create a new DOMXPath object $xpath to perform XPath queries on the DOMDocument object
+            $xpath = new DOMXPath($docs);
+            // Perform an XPath query to select 5 list items within a specific unordered list and store them in DOMNodeList object $listItems
+            $listItems = $xpath->query('(//ol[contains(@class, "gamut-1yv0cql-Box ebnwbv90")]//li) [position() <= 5]');
+            // Check if the XPath query was successful or not
+            if ($listItems === false) {
+                die("Error in XPath query");
+            }
+            // Iterate each elemnt of the  DOMNodeList $listItems
+            foreach ($listItems as $item) {
+
+                $data = new stdClass();
+                // Perform another XPath query to search for <a>-Tags within the <li>-Element and store each value in DOMNodeList object $links
+                $links = $xpath->query('.//a', $item);
+                // Extract the href from the only element (first) in $links and assign it to $href
+                $href = $links->item(0)->getAttribute('href');
+                $courseLink = "https://www.codecademy.com" . $href;
+                $data->link = $courseLink;
+                // Perform another XPath query to search for <h3>-Tags within the <li>-Element and store each value in DOMNodeList object $h3Tags
+                $h3Tags = $xpath->query('.//h3', $item);
+                // Extract the text content from the only element (first) in $h3Tags and assign it to $courseName
+                $courseName = $h3Tags->item(0)->textContent;
+
+                $data->name = $courseName;
+
+                $data->keywords = $cleanKeyword;
+
+                $table_name = 'smartlib_learning_resources';
+
+                $sql = "SELECT * FROM {" . $table_name . "} WHERE " . $DB->sql_compare_text('link') . " = ?";
+                $params = array($courseLink);
+
+                if (!$DB->record_exists_sql($sql, $params)) {
+                    // Link does not exist, insert the new record
+                    $newid = $DB->insert_record($table_name, $data);
+                    //echo "- New learning material $courseName inserted into database with id $newid.";
+                } else {
+                    // Link already exists, skip insertion
+                    //echo "- Learning material with link $courseLink already exists in the database.";
+                }
+            }
+        }
+    }
+
+    /*
+    //This is only for testing to display extracted links
+    foreach ($extractedLinks as $linksss) {
+        echo $linksss;
+    }
+    foreach ($extractedCourseNames as $namesss) {
+        echo $namesss;
+    }*/
 }
 
 echo $OUTPUT->footer();
-?>

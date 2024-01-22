@@ -25,9 +25,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$string['pluginname'] = 'Smart Library';
+$string['pluginname'] = '';
 $string['enable'] = 'Enable Smart Library'; // Description for enabling the plugin
 $string['enable_desc'] = 'Enable or disable the Smart Library functionality within Moodle.'; // Detailed description for what enabling the plugin does
-$string['nav_name'] = 'Learning materials'; // Name in the course menu 
+$string['nav_name'] = 'Smartlibrary'; // Name in the course menu 
 
 // Add other strings as needed
