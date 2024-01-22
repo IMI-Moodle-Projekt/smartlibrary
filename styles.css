@@ -9,3 +9,14 @@
     padding: 8px;
     text-align: left;
 }
+
+body {
+    background-image: url("https://www.ponto.io/_ipx/w_1536,f_webp,fit_cover/https://backend.talentine.io/storage/media/companies/190/wilhelminenhof-bibliothek-htw-berlin-maria-schramm-mitcopyright-1630409495mCQkI.jpg"); /* Replace with the actual URL of your image */
+    background-size: cover; /* Adjust the background size to cover the entire viewport */
+    background-repeat: no-repeat; /* Prevent the background image from repeating */
+}
+
+.pagelayout-standard #page.drawers .main-inner,
+body.limitedwidth #page.drawers .main-inner {
+    opacity: 0.95; 
+}

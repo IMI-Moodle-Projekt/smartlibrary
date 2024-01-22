@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="local/smartlibrary/db" VERSION="2023121102" COMMENT="XMLDB file for the SmartLibrary plugin"
+<XMLDB PATH="local/smartlibrary/db" VERSION="20240114" COMMENT="XMLDB file for the SmartLibrary plugin"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -10,6 +10,9 @@
         <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="link" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="keywords" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="activityid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="source" TYPE="char" LENGTH="50" NOTNULL="true" DEFAULT="crawler" SEQUENCE="false" COMMENT="Source of keywords"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="course ID"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
