@@ -259,25 +259,24 @@ if ($courseid > 0) {
             echo '</div>';
         
 
-            // Display the toggle arrow
 
             // Display keywords for the current activity
-            
-            $inputKeywords = $record->keywords;
-            
-            // Use a div with an ID to easily toggle its display
-    echo '<div id="keywords_' . $activityid . '" style="display: block;">';
-    echo '<p>' . format_string($inputKeywords) . '</p>';
-    echo '</div>';
-            
-            
+        $inputKeywords = $record->keywords;
 
-               // Edit and Delete Buttons with a class
-    echo '<div class="edit-delete-buttons_' . $activityid . '" style="display: none;">';
-    echo '<button class="edit-button" onclick="editKeywords(' . $courseid . ',' . $activityid . ', \'' . addslashes($inputKeywords) . '\')">Edit</button>';   
-    echo '<button class="delete-button" onclick="deleteKeywords(' . $record->id . ',' . $courseid . ')">Delete</button>';
-    echo '</div>';
-}
+        // Use a div with an ID to easily toggle its display
+        echo '<div id="keywords_' . $activityid . '" style="display: block;">';
+        echo '<p>' . format_string($inputKeywords) . '</p>';
+
+        // Edit and Delete Buttons with a class (visible only for professors)
+        if (has_capability('local/smartlibrary:edit', context_course::instance($courseid))) {
+            echo '<div class="edit-delete-buttons_' . $activityid . '" style="display: none;">';
+            echo '<button class="edit-button" onclick="editKeywords(' . $courseid . ',' . $activityid . ', \'' . addslashes($inputKeywords) . '\')">Edit</button>';
+            echo '<button class="delete-button" onclick="deleteKeywords(' . $record->id . ',' . $courseid . ')">Delete</button>';
+            echo '</div>';
+        }
+
+        echo '</div>';
+    }
             
     } else {
         echo '<p>No input keywords found for this course.</p>';
@@ -287,7 +286,7 @@ if ($courseid > 0) {
     // Display Crawler-Extracted Keywords
     echo '<h4>Course Summary Keywords:</h4>';
     $keywordsArray = get_keywords($course->fullname . ' ' . $course->summary);
-    
+    echo '<div id="courseSummaryKeywords" class="keywords-container expanded">'; // Setze die Klasse "expanded" für sichtbare Anzeige
 
     if (!empty($keywordsArray)) {
         // Construct a WHERE clause for each keyword
@@ -439,47 +438,91 @@ echo '<script>
 
 
     
-   function toggleKeywordsNew(activityId, action) {
-        var keywordsElements = document.querySelectorAll("[id^=\'keywords_\']");
-        var editDeleteButtons = document.querySelectorAll("[class^=\'edit-delete-buttons_\']");
-        var expandAllButton = document.getElementById("expandAllButton");
-        var collapseAllButton = document.getElementById("collapseAllButton");
+ function toggleKeywordsNew(activityId, action) {
+    var keywordsElements = document.querySelectorAll("[id^=\'keywords_\']");
+    var editDeleteButtons = document.querySelectorAll("[class^=\'edit-delete-buttons_\']");
+    var expandAllButton = document.getElementById("expandAllButton");
+    var collapseAllButton = document.getElementById("collapseAllButton");
 
-        for (var i = 0; i < keywordsElements.length; i++) {
-            if (action === "collapse") {
-                keywordsElements[i].style.display = "none";
-                for (var j = 0; j < editDeleteButtons.length; j++) {
-                    editDeleteButtons[j].style.display = "none";
-                }
-                expandAllButton.style.display = "block";
-                collapseAllButton.style.display = "none";
-            } else {
-                keywordsElements[i].style.display = "block";
-                for (var j = 0; j < editDeleteButtons.length; j++) {
-                    editDeleteButtons[j].style.display = "inline-block";
-                }
-                expandAllButton.style.display = "none";
-                collapseAllButton.style.display = "block";
+    for (var i = 0; i < keywordsElements.length; i++) {
+        if (action === "collapse") {
+            keywordsElements[i].style.display = "none";
+            for (var j = 0; j < editDeleteButtons.length; j++) {
+                editDeleteButtons[j].style.display = "none";
             }
+            expandAllButton.style.display = "block";
+            collapseAllButton.style.display = "none";
+        } else {
+            keywordsElements[i].style.display = "block";
+            for (var j = 0; j < editDeleteButtons.length; j++) {
+                editDeleteButtons[j].style.display = "inline-block";
+            }
+            expandAllButton.style.display = "none";
+            collapseAllButton.style.display = "block";
         }
     }
 
-    // Funktion zum Anzeigen von Keywords und Buttons beim Laden der Seite
-    document.addEventListener("DOMContentLoaded", function() {
-        var allKeywordElements = document.querySelectorAll("[id^=\'keywords_\']");
-        var allButtonsElements = document.querySelectorAll("[class^=\'edit-delete-buttons_\']");
-        
-        for (var i = 0; i < allKeywordElements.length; i++) {
-            allKeywordElements[i].style.display = "block";
+    // Zusätzlich für Course Summary Keywords
+    var courseSummaryKeywordsElement = document.getElementById("courseSummaryKeywords");
+    if (courseSummaryKeywordsElement) {
+        if (action === "collapse") {
+            courseSummaryKeywordsElement.style.display = "none";
+            courseSummaryKeywordsElement.classList.remove("expanded"); // Entferne die Klasse "expanded"
+        } else {
+            courseSummaryKeywordsElement.style.display = "block";
+            courseSummaryKeywordsElement.classList.add("expanded"); // Füge die Klasse "expanded" hinzu
         }
+    }
+}
 
-        for (var i = 0; i < allButtonsElements.length; i++) {
-            allButtonsElements[i].style.display = "inline-block";
-        }
+// Funktion zum Anzeigen von Keywords und Buttons beim Laden der Seite
+document.addEventListener("DOMContentLoaded", function() {
+    var allKeywordElements = document.querySelectorAll("[id^=\'keywords_\']");
+    var allButtonsElements = document.querySelectorAll("[class^=\'edit-delete-buttons_\']");
+    var courseSummaryKeywordsElement = document.getElementById("courseSummaryKeywords");
 
-        // Beim Laden der Seite "Collapse All" ausführen
-        toggleKeywordsNew(0, "collapse");
-    });
+    for (var i = 0; i < allKeywordElements.length; i++) {
+        allKeywordElements[i].style.display = "block";
+    }
+
+    for (var i = 0; i < allButtonsElements.length; i++) {
+        allButtonsElements[i].style.display = "inline-block";
+    }
+
+    // Beim Laden der Seite "Collapse All" ausführen
+    toggleKeywordsNew(0, "collapse");
+
+    // Zusätzlich für Course Summary Keywords
+    if (courseSummaryKeywordsElement) {
+        courseSummaryKeywordsElement.style.display = "none";
+        courseSummaryKeywordsElement.classList.remove("expanded"); // Entferne die Klasse "expanded"
+    }
+});
+
+// Funktion zum Anzeigen von Keywords und Buttons beim Laden der Seite
+document.addEventListener("DOMContentLoaded", function() {
+    var allKeywordElements = document.querySelectorAll("[id^=\'keywords_\']");
+    var allButtonsElements = document.querySelectorAll("[class^=\'edit-delete-buttons_\']");
+    var courseSummaryKeywordsElement = document.getElementById("courseSummaryKeywords");
+
+    for (var i = 0; i < allKeywordElements.length; i++) {
+        allKeywordElements[i].style.display = "block";
+    }
+
+    for (var i = 0; i < allButtonsElements.length; i++) {
+        allButtonsElements[i].style.display = "inline-block";
+    }
+
+    // Beim Laden der Seite "Collapse All" ausführen
+    toggleKeywordsNew(0, "collapse");
+
+    // Zusätzlich für Course Summary Keywords
+    if (courseSummaryKeywordsElement) {
+        courseSummaryKeywordsElement.style.display = "none";
+        courseSummaryKeywordsElement.classList.remove("expanded"); // Entferne die Klasse "expanded"
+    }
+});
+
 </script>';
 
 
