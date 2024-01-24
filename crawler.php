@@ -40,8 +40,10 @@ if (!has_capability('local/smartlibrary:view', $context)) {
 }
 
 // Render the page header
-echo $OUTPUT->header();
+//echo $OUTPUT->header();
 
+//get course id from crawler url
+$courseid = optional_param('courseid', 0, PARAM_INT);
 
 // Define array of Links to be extracted and later parsed
 $extractedLinks = [];
@@ -65,9 +67,28 @@ foreach ($courses as $course) {
     }
 }
 
+$sql = "SELECT keywords FROM {smartlib_learning_resources} WHERE source = ?";
+$params = array('input');
+$records = $DB->get_records_sql($sql, $params);
+
+// Loop through the records to extract keywords
+foreach ($records as $record) {
+    // Split the keywords string by comma and trim each keyword
+    $keywordsArray = array_map('trim', explode(',', $record->keywords));
+
+    // Add each keyword to $extractedSummaryKeywords if not already present
+    foreach ($keywordsArray as $keyword) {
+        if (!in_array($keyword, $extractedSummaryKeywords)) {
+            array_push($extractedSummaryKeywords, $keyword);
+        }
+    }
+}
+
 // if $extractedSummaryKeywords doesn't have valid keywords to crawl
 if (empty($extractedSummaryKeywords)) {
-    echo "None of the courses have any summary with valid keywords to intial crawler! Add some and try again";
+    //echo "None of the courses have any summary with valid keywords to intial crawler! Add some and try again";
+    $view_url = 'http://localhost/local/smartlibrary/view.php?courseid=' . $courseid;
+    redirect($view_url);
 } else { // if $extractedSummaryKeywords has valid keywords to crawl
     // 1.Coursera
     foreach ($extractedSummaryKeywords as $keyword) {
@@ -77,7 +98,7 @@ if (empty($extractedSummaryKeywords)) {
         $count = $DB->count_records_sql($sql, $params);
 
         if ($count > 0) {
-            echo $keyword . " already in the db and was not crawled<br>";
+            //echo $keyword . " already in the db and was not crawled<br>";
         } else {
             // Strip <p> tags from the course summary keyword
             $cleanKeyword = strip_tags($keyword);
@@ -130,7 +151,6 @@ if (empty($extractedSummaryKeywords)) {
             }
         }
     }
-
     // 2.Code Cademy
     foreach ($extractedSummaryKeywords as $keyword) {
         $table_name = 'smartlib_learning_resources';
@@ -139,7 +159,7 @@ if (empty($extractedSummaryKeywords)) {
         $count = $DB->count_records_sql($sql, $params);
 
         if ($count > 5) {
-            echo $keyword . " already in the db and was not crawled<br>";
+            //echo $keyword . " already in the db and was not crawled<br>";
         } else {
             // Strip <p> tags from the course summary keyword
             $cleanKeyword = strip_tags($keyword);
@@ -192,7 +212,8 @@ if (empty($extractedSummaryKeywords)) {
             }
         }
     }
-
+    $view_url = 'http://localhost/local/smartlibrary/view.php?courseid=' . $courseid;
+    redirect($view_url);
     /*
     //This is only for testing to display extracted links
     foreach ($extractedLinks as $linksss) {
@@ -203,4 +224,4 @@ if (empty($extractedSummaryKeywords)) {
     }*/
 }
 
-echo $OUTPUT->footer();
+//echo $OUTPUT->footer();
