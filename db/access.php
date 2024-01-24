@@ -26,16 +26,6 @@ defined('MOODLE_INTERNAL') || die();
 
 $capabilities = array(
 
-    'local/smartlibrary:view' => array(
-        'captype' => 'read',
-        'contextlevel' => CONTEXT_SYSTEM,
-        'archetypes' => array(
-            'user' => CAP_ALLOW,
-            'guest' => CAP_PREVENT,
-            'student' => CAP_ALLOW,
-            'teacher' => CAP_ALLOW
-        )
-    ),
 
     'local/smartlibrary:edit' => array(
         'captype' => 'write',
@@ -48,3 +38,27 @@ $capabilities = array(
 
     // ... other capabilities
 );
+/*
+$capabilities = array(
+
+    'local/smartlibrary:view' => array(
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => array(
+            'user' => CAP_ALLOW,
+            'guest' => CAP_PREVENT,
+            'student' => CAP_ALLOW,
+            'teacher' => CAP_ALLOW
+        )
+    ),*/
+
+    /*  'local/smartlibrary:edit' => array(
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => array(
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW
+        )
+    ),
+);*/
+

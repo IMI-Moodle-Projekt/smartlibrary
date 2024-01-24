@@ -31,8 +31,9 @@ function get_my_records() {
 function local_smartlibrary_extend_navigation_course(navigation_node $navigation) {
   global $PAGE;
   if ($PAGE->course) {
+    if (has_capability('local/smartlibrary:edit', context_course::instance($PAGE->course->id), )) {
       $PAGE->requires->js(new moodle_url('/local/smartlibrary/insertfield.js'));
-  }
+  }}
 
   $competenciesnode = navigation_node::create(get_string('nav_name', 'local_smartlibrary'),
           new moodle_url('/local/smartlibrary/view.php', array('courseid' => $PAGE->course->id)),
