@@ -164,6 +164,40 @@ hr {
 .keywords-container.expanded {
     display: block;
 }
+
+/* Füge einen Rahmen um jedes Keyword-Gruppen-Div hinzu */
+.keyword-group {
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+/* Stile für die Keywords innerhalb der Gruppen */
+.keyword-group h5 {
+    color: black;
+    margin-bottom: 5px;
+}
+
+.keyword-group ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.keyword-group li {
+    margin-bottom: 5px;
+}
+
+.keyword-group a {
+    color: #186cbc;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.keyword-group a:hover {
+    text-decoration: underline;
+}
+
 </style>
 ';
 // Get the course ID from the URL's query parameters
@@ -283,24 +317,24 @@ if ($courseid > 0) {
     }
     echo '<hr>';
 
-    // Display Crawler-Extracted Keywords
-    echo '<h4>Course Summary Keywords:</h4>';
-    $keywordsArray = get_keywords($course->fullname . ' ' . $course->summary);
-    echo '<div id="courseSummaryKeywords" class="keywords-container expanded">'; // Setze die Klasse "expanded" für sichtbare Anzeige
+// Display Crawler-Extracted Keywords
+echo '<h4>Course Summary Keywords:</h4>';
 
-    if (!empty($keywordsArray)) {
-        // Construct a WHERE clause for each keyword
-        $whereClauses = [];
-        foreach ($keywordsArray as $keyword) {
-            $whereClauses[] = "keywords LIKE '%$keyword%'";
-        }
+$keywordsArray = get_keywords($course->summary); 
+echo '<div id="courseSummaryKeywords" class="keywords-container expanded">'; // Setze die Klasse "expanded" für sichtbare Anzeige
 
-        // Combine the WHERE clauses using OR
-        $whereCondition = implode(' OR ', $whereClauses);
+if (!empty($keywordsArray)) {
+    // Iterate through each keyword
+    foreach ($keywordsArray as $keyword) {
+        echo '<div class="keyword-group">';
+        echo '<h5>' . $keyword . '</h5>'; // Display the keyword
+
+        // Construct a WHERE clause for the current keyword
+        $whereCondition = "keywords LIKE '%$keyword%' AND source = 'crawler'";
 
         // Your Moodle query
         $table_name = $CFG->prefix . 'smartlib_learning_resources';
-        $sql = "SELECT id, name, link, keywords FROM {$table_name} WHERE $whereCondition AND source = 'crawler'";
+        $sql = "SELECT id, name, link, keywords FROM {$table_name} WHERE $whereCondition";
 
         // Execute the query using Moodle's database API
         $entries = $DB->get_records_sql($sql);
@@ -315,21 +349,21 @@ if ($courseid > 0) {
                 $link = format_string($entry->link); // Ensuring HTML safety
 
                 // Output the HTML for each entry
-                echo '<li><a href="' . $link . '">' . $name . '</a>';
-
-                // Display existing keywords
-                echo '<p>Keywords: ' . format_string($entry->keywords) . '</p>';
-
-                echo '</li>';
+                echo '<li><a href="' . $link . '">' . $name . '</a></li>';
             }
 
             echo '</ul>';
         } else {
-            echo '<p>No matching entries found.</p>';
+            echo '<p>No matching entries found for this keyword.</p>';
         }
-    } else {
-        echo '<p>No keywords found for this course.</p>';
+
+        echo '</div>'; // Schließe den Rahmen für jedes Keyword
     }
+} else {
+    echo '<p>No keywords found for this course.</p>';
+}
+
+echo '</div>'; // Schließe den Rahmen für alle Keywords
 
     // Check if the form was submitted
     if ($data = data_submitted()) {
