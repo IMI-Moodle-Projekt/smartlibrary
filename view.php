@@ -1,8 +1,14 @@
 <?php
 
 require_once(__DIR__ . '/../../config.php');
-require_once($CFG->dirroot.'/course/lib.php');
+require_once($CFG->dirroot . '/course/lib.php');
 require_once(__DIR__ . '/lib.php');
+
+// Include the file for handling keywords POST requests
+require_once(__DIR__ . '/handle_keywords_post.php');
+
+// Include the file for handling edit keywords POST requests
+require_once(__DIR__ . '/handle_edit_keywords_post.php');
 
 // Define the context and page URL
 $context = context_system::instance();
@@ -15,6 +21,7 @@ $PAGE->set_url($pageurl);
 $PAGE->set_pagelayout('standard');
 $PAGE->set_title(format_string($heading));
 $PAGE->set_heading($heading);
+
 // Render the page header
 echo $OUTPUT->header();
 
@@ -204,71 +211,37 @@ hr {
 $courseid = optional_param('courseid', 0, PARAM_INT);
 global $DB;
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['keywords'], $_POST['activityid'], $_POST['courseid'])) {
-    // Sanitize and retrieve the form data
-    $activityId = required_param('activityid', PARAM_INT);
-    $newKeywords = required_param('keywords', PARAM_TEXT);
-    $courseid = required_param('courseid', PARAM_INT);
-    $newKeywords = clean_param($newKeywords, PARAM_TEXT);
-
-    // Determine the source of keywords (input or crawler)
-    $source = 'input';
-
-    // Fetch existing record for the activity, source, and course
-    $existingRecord = $DB->get_record('smartlib_learning_resources', array(
-        'activityid' => $activityId,
-        'source' => $source,
-        'courseid' => $courseid, // Add this condition
-    ));
-
-    if ($existingRecord) {
-        // Append new keywords to existing ones with a separator
-        $updatedKeywords = $existingRecord->keywords . ", " . $newKeywords;
-        // Remove duplicates
-        $uniqueKeywords = implode(', ', array_unique(array_map('trim', explode(',', $updatedKeywords))));
-        $existingRecord->keywords = $uniqueKeywords;
-        $DB->update_record('smartlib_learning_resources', $existingRecord);
-    } else {
-        // Insert a new record for the activity, source, and course
-        $newRecord = new stdClass();
-        $newRecord->activityid = $activityId;
-        $newRecord->keywords = $newKeywords;
-        $newRecord->source = $source; // Set the source
-        $newRecord->courseid = $courseid; // Set the course ID
-        $DB->insert_record('smartlib_learning_resources', $newRecord);
-    }
-
-    // Redirect to prevent form resubmission
-    //redirect(new moodle_url('/local/smartlibrary/view.php', ['courseid' => $courseid]), 'Keywords saved successfully', 1);
-}
-
 // Check if the course ID is valid
 if ($courseid > 0) {
+
+    require_once(__DIR__ . '/handle_keywords_post.php');
+    require_once(__DIR__ . '/handle_edit_keywords_post.php');
     // Get course
     $course = get_course($courseid);
 
-    
-
-    // Print the course name
-
-    //echo '<button onclick="goBackToCourse(' . $courseid . ')">Go Back to Course</button>';
-  //  echo '<button onclick="goBackToCourse(' . $courseid . ')" style="color: #186cbc; font-weight: bold;">Go Back to Course</button>';
 
 
-    
+    echo '<div style="display: flex; justify-content: space-between; align-items: center;">';
 
+    // Logo
+    echo '<img src="' . $CFG->wwwroot . '/local/smartlibrary/images/logo.png" alt="SmartLibrary Logo" class="logo" style="max-width: 250px; margin-right: 10px;" />';
+
+    // "Go Back to Course" Button
+    echo '<button onclick="goBackToCourse(' . $courseid . ')" style="color: #186cbc; font-weight: bold; margin-left: auto;">Go Back to Course</button>';
+
+    echo '</div>';
     echo '<h1>' . format_string($course->fullname) . '</h1>';
 
 
     echo '<button id="expandAllButton" onclick="toggleKeywordsNew(0, \'expand\')">Expand All</button>';
     echo '<button id="collapseAllButton" style="display:none;" onclick="toggleKeywordsNew(0, \'collapse\')">Collapse All</button>';
 
-    
+
 
     // Fetch input keywords for the current course
     echo '<h4>Input Keywords:</h4>';
 
-   
+
     // Fetch input keywords for the current course
 
     // Fetch input keywords for the current course
@@ -281,89 +254,89 @@ if ($courseid > 0) {
             // Retrieve and display the activity name
             $activityName = get_activity_name($activityid);
             echo '<hr>';
-            
+
             echo '<div style="display: flex; align-items: center;">'; // Flexbox für horizontalen Container
 
             // Display the toggle arrow first
             echo '<span class="toggle-arrow" onclick="toggleKeywords(' . $activityid . ')">&#x25B6;</span>';
-        
+
             // Display the activity name
             echo '<h6 style="color: #0066cc; font-size: 18px; margin-left: 10px;">' . $activityName . '</h6>';
-        
+
             echo '</div>';
-        
+
 
 
             // Display keywords for the current activity
-        $inputKeywords = $record->keywords;
+            $inputKeywords = $record->keywords;
 
-        // Use a div with an ID to easily toggle its display
-        echo '<div id="keywords_' . $activityid . '" style="display: block;">';
-        echo '<p>' . format_string($inputKeywords) . '</p>';
+            // Use a div with an ID to easily toggle its display
+            echo '<div id="keywords_' . $activityid . '" style="display: block;">';
+            echo '<p>' . format_string($inputKeywords) . '</p>';
 
-        // Edit and Delete Buttons with a class (visible only for professors)
-        if (has_capability('local/smartlibrary:edit', context_course::instance($courseid))) {
-            echo '<div class="edit-delete-buttons_' . $activityid . '" style="display: none;">';
-            echo '<button class="edit-button" onclick="editKeywords(' . $courseid . ',' . $activityid . ', \'' . addslashes($inputKeywords) . '\')">Edit</button>';
-            echo '<button class="delete-button" onclick="deleteKeywords(' . $record->id . ',' . $courseid . ')">Delete</button>';
+            // Edit and Delete Buttons with a class (visible only for professors)
+            if (has_capability('local/smartlibrary:edit', context_course::instance($courseid))) {
+                echo '<div class="edit-delete-buttons_' . $activityid . '" style="display: none;">';
+                echo '<button class="edit-button" onclick="editKeywords(' . $courseid . ',' . $activityid . ', \'' . addslashes($inputKeywords) . '\')">Edit</button>';
+                echo '<button class="delete-button" onclick="deleteKeywords(' . $record->id . ',' . $courseid . ')">Delete</button>';
+                echo '</div>';
+            }
+
             echo '</div>';
         }
-
-        echo '</div>';
-    }
-            
     } else {
         echo '<p>No input keywords found for this course.</p>';
     }
     echo '<hr>';
 
-// Display Crawler-Extracted Keywords
-echo '<h4>Course Summary Keywords:</h4>';
+    // Display Crawler-Extracted Keywords
+    echo '<h4>Course Summary Keywords:</h4>';
 
-$keywordsArray = get_keywords($course->summary); 
-echo '<div id="courseSummaryKeywords" class="keywords-container expanded">'; // Setze die Klasse "expanded" für sichtbare Anzeige
+    $keywordsArray = get_keywords($course->summary);
+    echo '<div id="courseSummaryKeywords" class="keywords-container expanded">';
+    if (!empty($keywordsArray)) {
+        // Iterate through each keyword
+        foreach ($keywordsArray as $keyword) {
+            // Display the keyword outside the border
+            echo '<h5 class="toggle-arrow" onclick="toggleCourseSummaryKeyword(this)">&#x25B6; ' . $keyword . '</h5>';
+            echo '<div class="keyword-group" style="display: none;">'; // Starte mit ausgeblendeten Keywords
 
-if (!empty($keywordsArray)) {
-    // Iterate through each keyword
-    foreach ($keywordsArray as $keyword) {
-        echo '<div class="keyword-group">';
-        echo '<h5>' . $keyword . '</h5>'; // Display the keyword
+            // Display the keyword inside the border
+            // Construct a WHERE clause for the current keyword
+            $whereCondition = "keywords LIKE '%$keyword%' AND source = 'crawler'";
 
-        // Construct a WHERE clause for the current keyword
-        $whereCondition = "keywords LIKE '%$keyword%' AND source = 'crawler'";
+            // Your Moodle query
+            $table_name = $CFG->prefix . 'smartlib_learning_resources';
+            $sql = "SELECT id, name, link, keywords FROM {$table_name} WHERE $whereCondition";
 
-        // Your Moodle query
-        $table_name = $CFG->prefix . 'smartlib_learning_resources';
-        $sql = "SELECT id, name, link, keywords FROM {$table_name} WHERE $whereCondition";
+            // Execute the query using Moodle's database API
+            $entries = $DB->get_records_sql($sql);
 
-        // Execute the query using Moodle's database API
-        $entries = $DB->get_records_sql($sql);
+            // Check if there are any matching entries
+            if (!empty($entries)) {
+                echo '<ul>';
 
-        // Check if there are any matching entries
-        if (!empty($entries)) {
-            echo '<ul>';
+                foreach ($entries as $entry) {
+                    // Assuming $entry is an object with properties id, name, and link
+                    $name = format_string($entry->name); // Ensuring HTML safety
+                    $link = format_string($entry->link); // Ensuring HTML safety
 
-            foreach ($entries as $entry) {
-                // Assuming $entry is an object with properties id, name, and link
-                $name = format_string($entry->name); // Ensuring HTML safety
-                $link = format_string($entry->link); // Ensuring HTML safety
+                    // Output the HTML for each entry
+                    echo '<li><a href="' . $link . '">' . $name . '</a></li>';
+                }
 
-                // Output the HTML for each entry
-                echo '<li><a href="' . $link . '">' . $name . '</a></li>';
+                echo '</ul>';
+            } else {
+                echo '<p>No matching entries found for this keyword.</p>';
             }
 
-            echo '</ul>';
-        } else {
-            echo '<p>No matching entries found for this keyword.</p>';
+            echo '</div>'; // Schließe den Rahmen für jedes Keyword
         }
-
-        echo '</div>'; // Schließe den Rahmen für jedes Keyword
+    } else {
+        echo '<p>No keywords found for this course.</p>';
     }
-} else {
-    echo '<p>No keywords found for this course.</p>';
-}
 
-echo '</div>'; // Schließe den Rahmen für alle Keywords
+    echo '</div>'; // Schließe den Rahmen für alle Keywords
 
     // Check if the form was submitted
     if ($data = data_submitted()) {
@@ -382,6 +355,10 @@ echo '</div>'; // Schließe den Rahmen für alle Keywords
 
 
 echo '<script>
+
+function goBackToCourse(courseId) {
+    history.back();
+}
 
     function editKeywords(courseId, activityId, keywords) {
         // Display a form to edit keywords
@@ -471,125 +448,113 @@ echo '<script>
 
 
 
-    
- function toggleKeywordsNew(activityId, action) {
-    var keywordsElements = document.querySelectorAll("[id^=\'keywords_\']");
-    var editDeleteButtons = document.querySelectorAll("[class^=\'edit-delete-buttons_\']");
-    var expandAllButton = document.getElementById("expandAllButton");
-    var collapseAllButton = document.getElementById("collapseAllButton");
+     function toggleKeywordsNew(activityId, action) {
+        var keywordsElements = document.querySelectorAll("[id^=\'keywords_\']");
+        var editDeleteButtons = document.querySelectorAll("[class^=\'edit-delete-buttons_\']");
+        var expandAllButton = document.getElementById("expandAllButton");
+        var collapseAllButton = document.getElementById("collapseAllButton");
 
-    for (var i = 0; i < keywordsElements.length; i++) {
-        if (action === "collapse") {
-            keywordsElements[i].style.display = "none";
-            for (var j = 0; j < editDeleteButtons.length; j++) {
-                editDeleteButtons[j].style.display = "none";
+        for (var i = 0; i < keywordsElements.length; i++) {
+            var keywordsElement = keywordsElements[i];
+            var editDeleteButton = editDeleteButtons[i];
+            var arrowElement = keywordsElement.previousElementSibling.querySelector(".toggle-arrow");
+
+            if (action === "collapse") {
+                keywordsElement.style.display = "none";
+                for (var j = 0; j < editDeleteButtons.length; j++) {
+                    editDeleteButtons[j].style.display = "none";
+                }
+                arrowElement.innerHTML = "&#x25B6;"; // Pfeil nach rechts
+                expandAllButton.style.display = "block";
+                collapseAllButton.style.display = "none";
+            } else {
+                keywordsElement.style.display = "block";
+                for (var j = 0; j < editDeleteButtons.length; j++) {
+                    editDeleteButtons[j].style.display = "inline-block";
+                }
+                arrowElement.innerHTML = "&#x25BC;"; // Pfeil nach unten
+                expandAllButton.style.display = "none";
+                collapseAllButton.style.display = "block";
             }
-            expandAllButton.style.display = "block";
-            collapseAllButton.style.display = "none";
-        } else {
-            keywordsElements[i].style.display = "block";
-            for (var j = 0; j < editDeleteButtons.length; j++) {
-                editDeleteButtons[j].style.display = "inline-block";
+
+            // Zusätzlich für Course Summary Keywords
+            var courseSummaryKeywordsElement = document.getElementById("courseSummaryKeywords");
+            if (courseSummaryKeywordsElement) {
+                if (action === "collapse") {
+                    // Verberge sowohl Links als auch Rahmen
+                    var linksAndBorders = courseSummaryKeywordsElement.querySelectorAll(".keyword-group a, .keyword-group");
+                    linksAndBorders.forEach(function(linkOrBorder) {
+                        linkOrBorder.style.display = "none";
+                    });
+                } else {
+                    // Zeige alle Links und Rahmen an
+                    courseSummaryKeywordsElement.style.display = "block";
+                    courseSummaryKeywordsElement.classList.add("expanded");
+                    var linksAndBorders = courseSummaryKeywordsElement.querySelectorAll(".keyword-group a, .keyword-group");
+                    linksAndBorders.forEach(function(linkOrBorder) {
+                        linkOrBorder.style.display = "block";
+                    });
+                }
+                // Aktualisiere den Pfeil-Zustand neben jedem Schlüsselwort
+                var summaryKeywordArrows = courseSummaryKeywordsElement.querySelectorAll(".toggle-arrow");
+                summaryKeywordArrows.forEach(function(arrow) {
+                    arrow.innerHTML = action === "collapse" ? "&#x25B6; " + arrow.innerHTML.substring(2) : "&#x25BC; " + arrow.innerHTML.substring(2);
+                });
             }
-            expandAllButton.style.display = "none";
-            collapseAllButton.style.display = "block";
         }
     }
 
-    // Zusätzlich für Course Summary Keywords
-    var courseSummaryKeywordsElement = document.getElementById("courseSummaryKeywords");
-    if (courseSummaryKeywordsElement) {
-        if (action === "collapse") {
-            courseSummaryKeywordsElement.style.display = "none";
-            courseSummaryKeywordsElement.classList.remove("expanded"); // Entferne die Klasse "expanded"
-        } else {
+    
+    // Funktion zum Anzeigen von Keywords und Buttons beim Laden der Seite
+    document.addEventListener("DOMContentLoaded", function() {
+        var allKeywordElements = document.querySelectorAll("[id^=\'keywords_\']");
+        var allButtonsElements = document.querySelectorAll("[class^=\'edit-delete-buttons_\']");
+        var courseSummaryKeywordsElement = document.getElementById("courseSummaryKeywords");
+    
+        for (var i = 0; i < allKeywordElements.length; i++) {
+            allKeywordElements[i].style.display = "block";
+        }
+    
+        for (var i = 0; i < allButtonsElements.length; i++) {
+            allButtonsElements[i].style.display = "inline-block";
+        }
+    
+        // Beim Laden der Seite "Collapse All" ausführen
+        toggleKeywordsNew(0, "collapse");
+    
+        // Zusätzlich für Course Summary Keywords
+        var courseSummaryKeywordsElement = document.getElementById("courseSummaryKeywords");
+        if (courseSummaryKeywordsElement) {
             courseSummaryKeywordsElement.style.display = "block";
             courseSummaryKeywordsElement.classList.add("expanded"); // Füge die Klasse "expanded" hinzu
         }
+    });
+    function toggleCourseSummaryKeyword(arrowElement) {
+    var keywordGroup = arrowElement.nextElementSibling; // Nächster Geschwisterknoten ist die Keyword-Gruppe
+    var linksAndBorders = keywordGroup.querySelectorAll(".keyword-group a, .keyword-group");
+
+    if (keywordGroup.style.display === "none" || keywordGroup.style.display === "") {
+        keywordGroup.style.display = "block";
+        arrowElement.innerHTML = "&#x25BC; " + arrowElement.innerHTML.substring(2); // Pfeil nach unten
+
+        // Zeige sowohl Links als auch Rahmen
+        linksAndBorders.forEach(function (linkOrBorder) {
+            linkOrBorder.style.display = "block";
+        });
+    } else {
+        keywordGroup.style.display = "none";
+        arrowElement.innerHTML = "&#x25B6; " + arrowElement.innerHTML.substring(2); // Pfeil nach rechts
+
+        // Verberge sowohl Links als auch Rahmen
+        linksAndBorders.forEach(function (linkOrBorder) {
+            linkOrBorder.style.display = "none";
+        });
     }
 }
 
-// Funktion zum Anzeigen von Keywords und Buttons beim Laden der Seite
-document.addEventListener("DOMContentLoaded", function() {
-    var allKeywordElements = document.querySelectorAll("[id^=\'keywords_\']");
-    var allButtonsElements = document.querySelectorAll("[class^=\'edit-delete-buttons_\']");
-    var courseSummaryKeywordsElement = document.getElementById("courseSummaryKeywords");
 
-    for (var i = 0; i < allKeywordElements.length; i++) {
-        allKeywordElements[i].style.display = "block";
-    }
-
-    for (var i = 0; i < allButtonsElements.length; i++) {
-        allButtonsElements[i].style.display = "inline-block";
-    }
-
-    // Beim Laden der Seite "Collapse All" ausführen
-    toggleKeywordsNew(0, "collapse");
-
-    // Zusätzlich für Course Summary Keywords
-    if (courseSummaryKeywordsElement) {
-        courseSummaryKeywordsElement.style.display = "none";
-        courseSummaryKeywordsElement.classList.remove("expanded"); // Entferne die Klasse "expanded"
-    }
-});
-
-// Funktion zum Anzeigen von Keywords und Buttons beim Laden der Seite
-document.addEventListener("DOMContentLoaded", function() {
-    var allKeywordElements = document.querySelectorAll("[id^=\'keywords_\']");
-    var allButtonsElements = document.querySelectorAll("[class^=\'edit-delete-buttons_\']");
-    var courseSummaryKeywordsElement = document.getElementById("courseSummaryKeywords");
-
-    for (var i = 0; i < allKeywordElements.length; i++) {
-        allKeywordElements[i].style.display = "block";
-    }
-
-    for (var i = 0; i < allButtonsElements.length; i++) {
-        allButtonsElements[i].style.display = "inline-block";
-    }
-
-    // Beim Laden der Seite "Collapse All" ausführen
-    toggleKeywordsNew(0, "collapse");
-
-    // Zusätzlich für Course Summary Keywords
-    if (courseSummaryKeywordsElement) {
-        courseSummaryKeywordsElement.style.display = "none";
-        courseSummaryKeywordsElement.classList.remove("expanded"); // Entferne die Klasse "expanded"
-    }
-});
-
+    
 </script>';
 
-
-// Check if the form was submitted for keyword editing
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_keywords'])) {
-    $courseid = required_param('courseid', PARAM_INT);
-    $activityid = required_param('activityid', PARAM_INT);
-    $editedKeywords = required_param('edited_keywords', PARAM_TEXT);
-
-    // Fetch existing record for the activity, source, and course
-    $existingRecord = $DB->get_record('smartlib_learning_resources', array(
-        'activityid' => $activityid,
-        'source' => 'input',
-        'courseid' => $courseid,
-    ));
-
-    if ($existingRecord) {
-        // Update the keywords in the database
-        $existingRecord->keywords = $editedKeywords;
-        $DB->update_record('smartlib_learning_resources', $existingRecord);
-    } else {
-        // Insert a new record if it doesn't exist
-        $newRecord = new stdClass();
-        $newRecord->activityid = $activityid;
-        $newRecord->keywords = $editedKeywords;
-        $newRecord->source = 'input'; // Set the source
-        $newRecord->courseid = $courseid; // Set the course ID
-        $DB->insert_record('smartlib_learning_resources', $newRecord);
-    }
-
-    // You can optionally send a response back to the AJAX request, e.g., echo 'success';
-    // Note: If you send a response, make sure not to include any HTML or whitespace before it.
-    exit;
-}
 
 echo $OUTPUT->footer();
