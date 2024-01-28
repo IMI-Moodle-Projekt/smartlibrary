@@ -31,7 +31,8 @@ document.addEventListener('DOMContentLoaded', function() {
         var inputField = document.createElement('input');
         inputField.type = 'text';
         inputField.name = 'keywords';
-        inputField.placeholder = 'Enter keywords here';
+        inputField.placeholder = 'Enter multiple keywords here seperated by commas (Example: html, css, javascript)'
+        inputField.className = 'wide-text-field';
 
         var submitButton = document.createElement('input');
         submitButton.type = 'submit';
@@ -54,4 +55,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
         activity.appendChild(form);
     });
+    var styleElement = document.createElement('style');
+    styleElement.innerHTML = `
+        .wide-text-field {
+            width: 733px; /* You can adjust the width as per your preference */
+        }
+    `;
+    document.head.appendChild(styleElement);
 });

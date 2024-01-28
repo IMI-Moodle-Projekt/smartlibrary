@@ -35,7 +35,7 @@ $PAGE->set_heading($heading);
 
 
 // Check for view capability
-if (!has_capability('local/smartlibrary:view', $context)) {
+if (!has_capability('local/smartlibrary:edit', $context)) {
     print_error('nopermissions', 'error', '', 'view smartlibrary');
 }
 
@@ -52,17 +52,15 @@ $extractedLinks = [];
 $extractedSummaryKeywords = [];
 $extractedCourseNames = [];
 
-// Get all courses of Moodle
-$courses = get_courses();
+//fetch current course
+$currentCourse = get_course($courseid);
 
-// Iterate each Moodle course summary and extract valid keywords of it and add it to $extractedSummaryKeywords
-foreach ($courses as $course) {
-    if (!empty($course->summary)) {
-        $validKeywords = get_keywords($course->summary);
-        foreach ($validKeywords as $keyword) {
-            if (!in_array($keyword, $extractedSummaryKeywords)) {
-                array_push($extractedSummaryKeywords, $keyword);
-            }
+// Iterate current course summary and extract valid keywords from it and add it to $extractedSummaryKeywords
+if (!empty($currentCourse->summary)) {
+    $validKeywords = get_keywords($currentCourse->summary);
+    foreach ($validKeywords as $keyword) {
+        if (!in_array($keyword, $extractedSummaryKeywords)) {
+            array_push($extractedSummaryKeywords, $keyword);
         }
     }
 }
