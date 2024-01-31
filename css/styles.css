@@ -1,0 +1,231 @@
+.local_smartlibrary_course_table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.local_smartlibrary_course_table th, 
+.local_smartlibrary_course_table td {
+    border: 1px solid black;
+    padding: 8px;
+    text-align: left;
+}
+
+.local_smartlibrary_course_table a {
+    color: #d9b702; 
+}
+
+/* Change the color of the entries in the crawler-extracted keywords table */
+.local_smartlibrary_course_table td {
+    color: #131f34; 
+}
+
+body {
+    background-image: url("https://www.ponto.io/_ipx/w_1536,f_webp,fit_cover/https://backend.talentine.io/storage/media/companies/190/wilhelminenhof-bibliothek-htw-berlin-maria-schramm-mitcopyright-1630409495mCQkI.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.pagelayout-standard #page.drawers .main-inner,
+body.limitedwidth #page.drawers .main-inner {
+    max-width: 1000px;
+    opacity: 0.95; 
+    text-align: left;
+    padding-left: 40px;
+    padding-right: 40px;
+
+}
+
+/* Additional styles from view.php */
+h2 {
+    color: #000000;
+    text-align: center;
+    margin-bottom: 10px;
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+p {
+    color: #000000;
+    text-align: left;
+    margin-bottom: 5px;
+    margin-top: 5px;
+    font-weight: bold;
+}
+
+.keyword-box {
+    border: 1px solid #000; 
+    padding: 10px; 
+    margin: auto;
+    text-align: center; 
+    font-weight: bold; 
+    max-width: 80%;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); 
+    background-color: #f9f9f9;
+}
+
+button {
+    color: #0082D1;
+    font-weight: bold;
+   
+    margin: 8px 8px 15px 0; 
+    border: none; 
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
+}
+
+/*  "Edit" Button  */
+button.edit-button {
+    color: #fff;
+    background-color:#76b900; 
+    float: right;
+    margin-right: 10px; 
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* "Delete" Button  */
+button.delete-button {
+    color: #fff;
+    background-color: #fd3d41;
+    float: right;
+    margin-right: 10px;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #f98012; 
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
+}
+
+#expandAllButton,
+#collapseAllButton {
+    float: right;
+    margin-right: 10px; 
+    
+}
+/* Style the buttons */
+#expandAllButton,
+#collapseAllButton {
+    color: #fff;
+    background-color: #0082D1;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#expandAllButton:hover,
+#collapseAllButton:hover {
+    background-color: #f98012;
+}
+
+#backToCourse {
+    float: right;
+    margin-right: 10px;
+    padding: 5px 10px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    text-decoration: underline;
+    color: #0082D1;
+    box-shadow: none; 
+}
+
+#backToCourse:hover {
+    color: #f98012;
+}
+
+#collapseAllButton {
+    display: none; 
+}
+
+/* Add more padding for the keywords list */
+p {
+    padding-bottom: 5px; 
+    margin-bottom: 5px;
+}
+
+h4 {
+    color: #131f34; 
+    margin-bottom: 20px; 
+}
+
+h6 {
+    color: #0066cc;
+    font-size: 18px;
+    margin-bottom: 10px; 
+}
+hr {
+    border: 1px solid #ccc; 
+    margin: 15px 0; 
+}
+/* Add a class to style the toggle button */
+.toggle-arrow {
+    cursor: pointer;
+    color: black;
+    font-weight: bold;
+    margin-right: 5px;
+    margin-bottom: 10px;
+}
+
+/* Hide the keywords by default */
+.keywords-container {
+    display: none;
+}
+
+/* Style for the expanded keywords */
+.keywords-container.expanded {
+    display: block;
+}
+
+/* Add a border around each keyword group div */
+.keyword-group {
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+/* Styles for the keywords within the groups */
+.keyword-group h5 {
+    color: black;
+    margin-bottom: 5px;
+}
+
+.keyword-group ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.keyword-group li {
+    margin-bottom: 5px;
+}
+
+.keyword-group a {
+    color: #0082D1;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.keyword-group a:hover {
+    text-decoration: underline;
+}
+
+/* Add a class to style the flex container */
+.keyword-group li {
+    margin-bottom: 5px;
+    display: flex; 
+    align-items: center; 
+}
+
+/* Style the logo to have some spacing from the link and name */
+.keyword-group .logo-icon {
+    max-width: 50px; 
+    height: auto;
+    margin-left: auto; 
+}
