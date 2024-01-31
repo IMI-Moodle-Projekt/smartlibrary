@@ -1,8 +1,6 @@
 # smartLibrary #
 
-TODO Describe the plugin shortly here.
-
-TODO Provide more detailed description here.
+SmartLibrary is an innovative Moodle plugin developed to promote self-regulated learning by delivering educational resources from online learning platforms such as Coursera and Codecademy.
 
 ## Installing via uploaded ZIP file ##
 
