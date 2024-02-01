@@ -99,7 +99,7 @@ if ($courseid > 0) {
             foreach ($inputKeywordsArray as $keyword) {
                 echo '<h5 class="toggle-arrow" onclick="toggleCourseSummaryKeyword(this)">&#x25B6; ' . $keyword . '</h5>';
                 echo '<div class="keyword-group" style="display: none;">'; // Start with hidden keywords
-                $whereCondition = "name LIKE '%$keyword%' AND source = 'crawler'";
+                $whereCondition = "CONCAT(' ', name, ' ') LIKE '% " . $keyword . " %' AND source = 'crawler'";
                 $table_name = $CFG->prefix . 'smartlib_learning_resources';
                 $sql = "SELECT id, name, link, keywords FROM {$table_name} WHERE $whereCondition";
                 $entries = $DB->get_records_sql($sql);
@@ -153,7 +153,7 @@ if ($courseid > 0) {
             echo '<h5 class="toggle-arrow" onclick="toggleCourseSummaryKeyword(this)">&#x25B6; ' . $keyword . '</h5>';
             echo '<div class="keyword-group" style="display: none;">'; 
             // Construct a WHERE clause for the current keyword
-            $whereCondition = "name LIKE '%$keyword%' AND source = 'crawler'";
+            $whereCondition = "CONCAT(' ', name, ' ') LIKE '% " . $keyword . " %' AND source = 'crawler'";
             // Your Moodle query
             $table_name = $CFG->prefix . 'smartlib_learning_resources';
             $sql = "SELECT id, name, link, keywords FROM {$table_name} WHERE $whereCondition";
