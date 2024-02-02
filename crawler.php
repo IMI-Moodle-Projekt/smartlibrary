@@ -94,6 +94,7 @@ if (empty($extractedSummaryKeywords)) {
         $sql = "SELECT COUNT(*) FROM {" . $table_name . "} WHERE " . $DB->sql_compare_text('keywords') . " = ?";
         $params = array($keyword);
         $count = $DB->count_records_sql($sql, $params);
+        $count = $count - 1;
 
         if ($count > 0) {
             //echo $keyword . " already in the db and was not crawled<br>";
@@ -155,6 +156,7 @@ if (empty($extractedSummaryKeywords)) {
         $sql = "SELECT COUNT(*) FROM {" . $table_name . "} WHERE " . $DB->sql_compare_text('keywords') . " = ?";
         $params = array($keyword);
         $count = $DB->count_records_sql($sql, $params);
+        $count = $count - 1;
 
         if ($count > 5) {
             //echo $keyword . " already in the db and was not crawled<br>";
