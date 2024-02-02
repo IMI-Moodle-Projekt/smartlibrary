@@ -109,7 +109,7 @@ if (empty($extractedSummaryKeywords)) {
             // Create a new DOMXPath object $xpath to perform XPath queries on the DOMDocument object
             $xpath = new DOMXPath($docs);
             // Perform an XPath query to select 5 list items within a specific unordered list and store them in DOMNodeList object $listItems
-            $listItems = $xpath->query('(//ul[contains(@class, "cds-9 css-18msmec cds-10")]//li)[position() <= 5]');
+            $listItems = $xpath->query('(//ul[contains(@class, "cds-9 css-reop8o cds-10")]//li)[position() <= 5]');
             // Check if the XPath query was successful or not
             if ($listItems === false) {
                 die("Error in XPath query");
